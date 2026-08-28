@@ -1,0 +1,126 @@
+\usepackage{xcolor}
+\definecolor{ugblue}{RGB}{31, 78, 121}
+\usepackage{graphicx}
+\usepackage{mathptmx} % Times New Roman
+\usepackage[T1]{fontenc}
+\usepackage{setspace}
+\setstretch{1.5} % Espaciado 1.5 para el cuerpo del trabajo
+\setlength{\parskip}{8pt}
+\setlength{\parindent}{0pt}
+
+% Configuración de comillas APA (estándar en lugar de angulares)
+\usepackage[spanish=mexican]{csquotes}
+\DeclareQuoteAlias{mexican}{spanish}
+\AtBeginDocument{\setquotestyle{mexican}}
+
+% Numeración inferior derecha
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[R]{\thepage}
+
+% Ajuste de tamaños para títulos y subtítulos (14pt)
+\usepackage{titlesec}
+\titleformat{\section}{\fontsize{14}{17}\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}{\fontsize{14}{17}\bfseries}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}{\fontsize{14}{17}\bfseries}{\thesubsubsection}{1em}{}
+
+% Caption APA 7: normalsize, doble espaciado, número en negrita, título en cursiva en nueva línea
+\usepackage{caption}
+\usepackage{floatrow}
+\floatsetup[figure]{capposition=top}
+\floatsetup[table]{capposition=top}
+\captionsetup{
+  labelsep        = newline,
+  font            = {normalsize, doublespacing},
+  labelfont       = bf,
+  textfont        = it,
+  justification   = raggedright,
+  singlelinecheck = false,
+  skip            = 6pt
+}
+
+% Asegurar interlineado doble en las notas de threeparttable (kableExtra)
+\usepackage{threeparttable}
+\usepackage{threeparttablex}
+\usepackage{etoolbox}
+% Reserva de espacio vertical. Una tabla fijada con [H] y su Nota son dos
+% bloques distintos para LaTeX, de modo que un salto de pagina puede caer
+% entre ambos y dejar la nota huerfana. \Needspace obliga a romper antes
+% de la tabla cuando no cabe el bloque entero.
+\usepackage{needspace}
+\appto\TPTnoteSettings{\linespread{2}\selectfont}
+
+% Redefinir el índice como una sección numerada llamada "Tabla de contenido"
+\AtBeginDocument{%
+  \renewcommand{\contentsname}{Tabla de contenido}%
+  \renewcommand{\tablename}{Tabla}%   % sobrescribe la traducción de babel
+}
+\makeatletter
+\renewcommand\tableofcontents{%
+    \addtocontents{toc}{\protect\setcounter{tocdepth}{-1}}%
+    \section{\contentsname}%
+    \addtocontents{toc}{\protect\setcounter{tocdepth}{3}}%
+    \@starttoc{toc}%
+}
+\makeatother
+
+% ── Tablas Likert del instrumento (Anexo II) ─────────────────────────────────
+% El Anexo II es un facsímil del cuestionario, no una tabla de resultados: la
+% afirmación tiene que caber en una o dos líneas y las casillas 1-5 tienen que
+% poder marcarse. Antes iban como tabla Markdown, que reparte el ancho a partes
+% iguales entre las siete columnas y dejaba la afirmación tan estrecha que cada
+% ítem se partía en cuatro a seis líneas. Se fija aquí y no en cada tabla para
+% que las tres salgan idénticas.
+%
+% Tres decisiones y su porqué:
+%   - `spacing{1}`: el cuerpo va a 1,5 y ese interlineado se heredaba dentro de
+%     las celdas, multiplicando por 1,5 la altura de cada línea partida.
+%   - `footnotesize`: son 10 pt sobre un cuerpo de 12, el mismo tamaño que
+%     `font_size = 10` da al resto de tablas del documento.
+%   - `\square`: es el glifo con el que pandoc compone las casillas `- [ ]` del
+%     resto del instrumento, de modo que las dos formas de marcar coinciden.
+\newcommand{\lkbox}{$\square$}
+\newcommand{\lkfila}[2]{#1 & #2 & \lkbox & \lkbox & \lkbox & \lkbox & \lkbox \\}
+\newenvironment{likert}{%
+  \par\addvspace{4pt}%
+  \begin{spacing}{1}%
+  \footnotesize
+  \renewcommand{\arraystretch}{1.3}%
+  \noindent
+  \tabular{@{}l>{\raggedright\arraybackslash}p{9.5cm}ccccc@{}}
+  \toprule
+  \textbf{N.\textsuperscript{o}} & \textbf{Afirmación} &
+  \textbf{1} & \textbf{2} & \textbf{3} & \textbf{4} & \textbf{5} \\
+  \midrule
+}{%
+  \bottomrule
+  \endtabular
+  \end{spacing}%
+  \par\addvspace{12pt}%
+}
+
+% ── Anexos en PDF ────────────────────────────────────────────────────────────
+% Los anexos administrativos (autorización institucional, aprobación del comité,
+% carta del director, informe de similitud) son PDF firmados y escaneados que se
+% insertan tal cual. `pdfpages` los intercala; sin él, `\includepdf` no existe.
+%
+% Las páginas insertadas NO heredan el estilo de página, de modo que perderían la
+% numeración inferior derecha que exige el formato de la Universidad. Se recupera
+% con `pagecommand={\thispagestyle{fancy}}` en cada llamada; la definición está
+% en la función `anexo_pdf()` del chunk `setup`, para no repetirla.
+\usepackage{pdfpages}
+
+% Recorta el índice desde el punto donde se invoque: a partir de ahí solo se
+% listan las entradas de nivel `section`. Se usa una sola vez, justo antes de la
+% página separadora de los anexos, porque las secciones del instrumento son
+% subdivisiones de un documento reproducido y no del trabajo: listarlas hacía
+% que el índice pareciera tener siete apartados más.
+%
+% Va como macro y no escrito en el .Rmd a propósito: pandoc no anida bien los
+% dos niveles de llaves de `\addtocontents{toc}{\protect\setcounter{...}{...}}`
+% y la compilación aborta con «No counter 'D' defined».
+\newcommand{\indicesolosecciones}{%
+  \addtocontents{toc}{\protect\setcounter{tocdepth}{1}}%
+}

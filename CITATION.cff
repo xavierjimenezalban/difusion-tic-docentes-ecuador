@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: "Si utiliza estos datos o este código, por favor cite el trabajo como sigue."
+title: "Difusión de herramientas digitales en la enseñanza de matemáticas: estimación y comparación de modelos matemáticos"
+abstract: "Datos, código y documento reproducible del estudio sobre difusión de GeoGebra, Desmos y Khan Academy entre docentes de matemáticas del Ecuador."
+type: dataset
+authors:
+  # El apellido va CON GUION, igual que en el perfil ORCID. Sin él, los
+  # indexadores parten los apellidos compuestos españoles y reparten las
+  # publicaciones del mismo autor entre dos entradas distintas.
+  - family-names: "Jiménez-Albán"
+    given-names: "Xavier"
+    orcid: "https://orcid.org/0000-0002-7227-9392"
+  - family-names: "Narváez"
+    given-names: "Susan"
+version: "1.0.0"
+date-released: "2026-XX-XX"     # TODO: fecha de archivado en Zenodo
+license: CC-BY-4.0
+doi: "10.5281/zenodo.XXXXXXX"   # TODO: DOI que emita Zenodo
+keywords:
+  - difusión de innovaciones
+  - modelo de Bass
+  - adopción tecnológica docente
+  - educación matemática
+  - Ecuador

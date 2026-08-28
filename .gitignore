@@ -1,0 +1,38 @@
+# Caché de knitr: se regenera, y publicarla haría que el repositorio
+# reprodujera cifras viejas en lugar de recalcularlas.
+analysis/pfm_cache/
+analysis/pfm_files/
+analysis/pub_files/
+publicar/
+
+# NO PUBLICAR: el PDF de la tesis. Se genera en el destino porque
+# preparar_repo.sh cuenta sus páginas como guarda (98 sin anexos, 103 con
+# ellos), pero no se sube: la prosa completa indexada en GitHub es justo lo
+# que el informe de similitud no debe encontrar.
+analysis/pfm.pdf
+
+# Salidas de LaTeX
+*.log
+*.aux
+*.out
+*.toc
+*.lof
+*.lot
+*.synctex.gz
+
+# Residuos de sesión de R
+.Rhistory
+.RData
+.Rproj.user/
+Rplots.pdf
+
+# NUNCA PUBLICAR: datos de terceros que no consintieron su difusión
+NOMINA-DOCENTES-LA-SALLE.pdf
+correos.txt
+autorizacion*.pdf
+
+# NUNCA PUBLICAR: anexos administrativos firmados.
+# Llevan la firma, el nombre y el cargo de terceros que autorizaron la
+# recolección de datos, pero no su difusión. El documento compila sin ellos:
+# en su lugar la página separadora imprime una nota que explica la omisión.
+anexos/
