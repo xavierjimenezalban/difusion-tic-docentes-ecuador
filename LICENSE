@@ -1,5 +1,5 @@
 Los datos y el documento de este repositorio se publican bajo licencia
-Creative Commons Atribución 4.0 Internacional (CC BY 4.0).
+Creative Commons Atribución-NoComercial 4.0 Internacional (CC BY-NC 4.0).
 
 Copyright (c) 2026 Xavier Jiménez-Albán y Susan Narváez
 
@@ -7,12 +7,17 @@ Cubre el texto del trabajo de titulación (la prosa de pfm.Rmd y el PDF compilad
 pfm.pdf) y los archivos de datos de la encuesta (encuesta1.csv, encuesta2.csv y
 encuesta_consolidada.csv).
 
-Usted es libre de compartir y adaptar el material para cualquier finalidad,
-incluso comercial, siempre que reconozca la autoría de forma adecuada, aporte
-un enlace a la licencia e indique si se han realizado cambios.
+Usted es libre de compartir y adaptar el material, siempre que no lo haga con
+fines comerciales, reconozca la autoría de forma adecuada, aporte un enlace a la
+licencia e indique si se han realizado cambios.
+
+La cláusula no comercial responde al compromiso adquirido con las personas
+encuestadas, a quienes el consentimiento informado del estudio les garantizó que
+sus respuestas se emplearían exclusivamente con fines de investigación
+académica.
 
 Texto completo de la licencia:
-https://creativecommons.org/licenses/by/4.0/legalcode.es
+https://creativecommons.org/licenses/by-nc/4.0/legalcode.es
 
 Esta concesión coexiste con la licencia gratuita, intransferible y NO EXCLUSIVA
 para el uso no comercial de la obra con fines no académicos otorgada a favor de
@@ -28,7 +33,7 @@ Atribución sugerida:
   Jiménez-Albán, X., y Narváez, S. (2026). Difusión de
   herramientas digitales en la enseñanza de matemáticas: estimación y
   comparación de modelos matemáticos [Conjunto de datos y código].
-  Zenodo. https://doi.org/10.5281/zenodo.XXXXXXX
+  Zenodo. https://doi.org/10.5281/zenodo.22151102
 
 El código de análisis (consolidar.R, anonimizar.R, los bloques de código de
 pfm.Rmd y los archivos .tex) NO se rige por esta licencia: es obra de Xavier

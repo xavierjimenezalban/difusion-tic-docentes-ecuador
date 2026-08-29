@@ -18,7 +18,7 @@ perfiles contextuales de adopción mediante Análisis de Correspondencia Múltip
 - **Firmas del trabajo de titulación**: Xavier Jiménez-Albán y Susan Narváez.
 - **Dirección del trabajo de titulación**: Víctor Manuel Barros
   ([0000-0001-8542-6454](https://orcid.org/0000-0001-8542-6454)) — Universidad de Guayaquil.
-- **DOI del archivo citable**: <!-- TODO: pegar el DOI de Zenodo -->
+- **DOI del archivo citable**: [10.5281/zenodo.22151102](https://doi.org/10.5281/zenodo.22151102)
 - **Muestra analizada**: N = 63 docentes (66 respuestas recibidas, 3 excluidas
   por no ejercer ni haber ejercido la docencia en matemáticas o ciencias afines).
 
@@ -120,8 +120,14 @@ Este repositorio contiene tres clases de material y cada una tiene su licencia:
 | Material | Archivos | Titular | Licencia |
 |---|---|---|---|
 | **Código** | `R/consolidar.R`, `R/anonimizar.R`, los bloques de código de `analysis/pfm.Rmd`, `*.tex` | Xavier Jiménez-Albán | MIT — ver `LICENSE-CODE` |
-| **Datos** | Los tres CSV de `data/` | Ambos autores | CC BY 4.0 — ver `LICENSE` |
-| **Documento** | El texto del trabajo de titulación: la prosa de `analysis/pfm.Rmd` | Ambos autores | CC BY 4.0 — ver `LICENSE` |
+| **Datos** | Los tres CSV de `data/` | Ambos autores | CC BY-NC 4.0 — ver `LICENSE` |
+| **Documento** | El texto del trabajo de titulación: la prosa de `analysis/pfm.Rmd` | Ambos autores | CC BY-NC 4.0 — ver `LICENSE` |
+
+La cláusula **no comercial** de los datos y del documento no es una elección estética:
+el consentimiento informado del estudio garantizó a las personas encuestadas que sus
+respuestas se emplearían «exclusivamente con fines de investigación académica», y la
+licencia del repositorio no debe conceder más de lo que se les prometió. El código no
+contiene respuestas de nadie, y por eso se publica bajo MIT sin esa restricción.
 
 El código de análisis y el texto del trabajo son obras distintas con autoría distinta,
 y por eso se licencian por separado. El archivo `CITATION.cff` es otra cosa: declara
@@ -134,9 +140,8 @@ del *Reglamento para el Proceso de Titulación en Posgrado* obliga a otorgar a f
 la Universidad de Guayaquil, conforme al artículo 114 del Código Orgánico de la Economía
 Social de los Conocimientos, Creatividad e Innovación.
 
-Esa concesión y la CC BY 4.0 de este repositorio **no entran en conflicto**, y conviene
-dejar dicho por qué, porque a primera vista una permite el uso comercial y la otra no.
-El propio Anexo X declara que los contenidos son «de mi/nuestra absoluta propiedad»: la
+Esa concesión y la CC BY-NC 4.0 de este repositorio **no entran en conflicto**, y
+conviene dejar dicho por qué. El propio Anexo X declara que los contenidos son «de mi/nuestra absoluta propiedad»: la
 titularidad no se cede. Y califica la licencia de **no exclusiva**, de modo que no
 impide a los titulares conceder otras sobre la misma obra. La restricción a uso no
 comercial acota lo que la Universidad puede hacer con el trabajo, no lo que pueden

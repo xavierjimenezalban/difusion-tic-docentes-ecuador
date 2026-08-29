@@ -14,8 +14,8 @@ authors:
     given-names: "Susan"
 version: "1.0.0"
 date-released: "2026-XX-XX"     # TODO: fecha de archivado en Zenodo
-license: CC-BY-4.0
-doi: "10.5281/zenodo.XXXXXXX"   # TODO: DOI que emita Zenodo
+license: CC-BY-NC-4.0
+doi: "10.5281/zenodo.22151102"
 keywords:
   - difusión de innovaciones
   - modelo de Bass
