@@ -162,7 +162,7 @@ hacer quienes lo firman.
   Administración del proyecto.
 - **Susan Narváez** — Gestión del acceso a la institución del núcleo inicial y
   administración de la encuesta en la Unidad Educativa Particular Siete de Mayo
-  (Machala).
+  (Machala). Difusión de ambos formularios a través de sus redes profesionales.
 - **Víctor Manuel Barros**
   ([0000-0001-8542-6454](https://orcid.org/0000-0001-8542-6454)) — Dirección
   académica del trabajo de titulación.
