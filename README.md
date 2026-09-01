@@ -1,5 +1,7 @@
 # Difusión de herramientas digitales en la enseñanza de matemáticas
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22151102.svg)](https://doi.org/10.5281/zenodo.22151102)
+
 Datos, código y documento reproducible del estudio sobre la difusión de GeoGebra,
 Desmos y Khan Academy entre docentes de matemáticas del Ecuador.
 
