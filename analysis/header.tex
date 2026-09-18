@@ -113,8 +113,9 @@
 \usepackage{pdfpages}
 
 % Recorta el índice desde el punto donde se invoque: a partir de ahí solo se
-% listan las entradas de nivel `section`. Se usa una sola vez, justo antes de la
-% página separadora de los anexos, porque las secciones del instrumento son
+% listan las entradas de nivel `section` y `subsection` (cada anexo es una
+% `subsection` de «Anexos»; las secciones del cuestionario, más hondas, no).
+% Se usa una sola vez, justo antes de la página separadora de los anexos, porque las secciones del instrumento son
 % subdivisiones de un documento reproducido y no del trabajo: listarlas hacía
 % que el índice pareciera tener siete apartados más.
 %
@@ -122,5 +123,5 @@
 % dos niveles de llaves de `\addtocontents{toc}{\protect\setcounter{...}{...}}`
 % y la compilación aborta con «No counter 'D' defined».
 \newcommand{\indicesolosecciones}{%
-  \addtocontents{toc}{\protect\setcounter{tocdepth}{1}}%
+  \addtocontents{toc}{\protect\setcounter{tocdepth}{2}}%
 }

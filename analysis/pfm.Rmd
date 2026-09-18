@@ -10,7 +10,7 @@ geometry: "a4paper,left=4cm,right=3cm,top=3cm,bottom=3cm"
 output:
   bookdown::pdf_document2:
     number_sections: true
-    toc: true
+    toc: false  # el índice va en el cuerpo, tras los anexos IX y X
     toc_depth: 3
     includes:
       in_header: header.tex
@@ -84,13 +84,18 @@ REPO_LIC    <- "CC BY-NC 4.0"
 # La validez criptografica NO se puede conservar de ninguna manera: la firma
 # cubre el archivo original byte a byte y cualquier fusion la rompe. Si hay que
 # validarla en FirmaEC, se entregan aparte los originales de `anexos/`.
-DIR_PLANOS <- "../anexos/planos"
+# Las copias aplanadas son intermedias: van a la carpeta temporal de la sesión
+# de R, que dura toda la compilación, para que la única carpeta de anexos del
+# proyecto sea `anexos/`, con los originales tal como los dejó Xavier.
+DIR_PLANOS <- file.path(tempdir(), "anexos-aplanados")
 QPDF <- Sys.which("qpdf")
 
 anexo_aplanar <- function(archivo) {
   if (!nzchar(QPDF)) return(archivo)
   dir.create(DIR_PLANOS, showWarnings = FALSE, recursive = TRUE)
-  destino <- file.path(DIR_PLANOS, basename(archivo))
+  # Sin espacios: \includepdf no acepta rutas con espacios, y el nombre del
+  # original (p. ej. «anexo5b-ANTIPLAGIO -JIMENEZ-NARVAEZ-signed.pdf») no se toca.
+  destino <- file.path(DIR_PLANOS, gsub(" ", "_", basename(archivo)))
   if (!file.exists(destino) || file.mtime(destino) < file.mtime(archivo)) {
     system2(QPDF, c("--flatten-annotations=all",
                     shQuote(archivo), shQuote(destino)),
@@ -106,6 +111,40 @@ anexo_pdf <- function(archivos) {
   }
 }
 
+# Igual que anexo_pdf(), pero cada anexo con su propia línea en el índice,
+# rotulada con el número que lleva impreso el formulario (el del reglamento).
+# La entrada se escribe desde la primera página del PDF insertado, para que el
+# enlace y el número de página apunten a ella. No se usa `addtotoc` de pdfpages
+# porque numera la entrada como una subsección más («12.1», «12.2»...).
+anexo_con_indice <- function(archivo, titulo) {
+  if (!file.exists(archivo)) return(invisible(NULL))
+  pdf  <- anexo_aplanar(archivo)
+  info <- system2("pdfinfo", shQuote(pdf), stdout = TRUE)
+  n    <- as.integer(sub(".*:\\s+", "", grep("^Pages:", info, value = TRUE)))
+  dims <- as.numeric(strsplit(sub(".*:\\s+([0-9.]+) x ([0-9.]+).*", "\\1 \\2",
+                                  grep("^Page size:", info, value = TRUE)), " ")[[1]])
+  # Un formulario apaisado (el registro de tutorías) se inserta en su propia
+  # página apaisada y a tamaño real: encajado en una vertical, se reducía hasta
+  # no poder leerse. Los verticales siguen en A4 como el resto del documento.
+  # En la página apaisada el pie de `fancy` cae fuera del papel, así que el
+  # número se dibuja a mano en la esquina inferior derecha, a 3 cm del borde
+  # derecho como en las páginas verticales.
+  if (length(dims) == 2 && dims[1] > dims[2]) {
+    opc    <- sprintf("fitpaper,picturecommand={\\put(%.0f,55){\\makebox(0,0)[r]{\\thepage}}},",
+                      dims[1] - 85)
+    estilo <- "\\thispagestyle{empty}"
+  } else {
+    opc    <- ""
+    estilo <- "\\thispagestyle{fancy}"
+  }
+  cat("\\includepdf[", opc, "pages=1,pagecommand={", estilo,
+      "\\phantomsection\\addcontentsline{toc}{subsection}{", titulo, "}}]{",
+      pdf, "}\n", sep = "")
+  if (length(n) == 1 && n > 1)
+    cat("\\includepdf[", opc, "pages=2-,pagecommand={", estilo, "}]{",
+        pdf, "}\n", sep = "")
+}
+
 # La nota va al pie de la pagina separadora y SOLO en la version publica. El
 # disparador es la ausencia de la carpeta entera, no la de un archivo suelto:
 # en la maquina del autor puede faltar todavia un anexo por recibir, y eso es un
@@ -115,8 +154,9 @@ nota_anexos_retenidos <- function() {
   cat("\\begin{center}\n\\begin{minipage}{0.82\\textwidth}\n",
       "\\begin{spacing}{1}\n\\footnotesize\\textit{Nota.} ",
       "Los anexos administrativos —la aprobación del tema por el comité ",
-      "académico y la designación del director, el informe de verificación de ",
-      "similitud, la carta de aprobación del director y la autorización ",
+      "académico y la designación del director, el certificado del director, ",
+      "el informe de verificación de similitud, el registro de tutorías, la ",
+      "rúbrica de evaluación y la autorización ",
       "institucional bajo la que se aplicó el instrumento— no se reproducen en ",
       "esta versión del documento, generada desde el repositorio público de ",
       "reproducibilidad, por tratarse de documentación firmada que lleva el ",
@@ -125,6 +165,32 @@ nota_anexos_retenidos <- function() {
       "instrumento de recolección de datos, que no contiene datos de terceros, ",
       "sí se reproduce completo.\n",
       "\\end{spacing}\n\\end{minipage}\n\\end{center}\n", sep = "")
+}
+
+# ── Preliminares: Anexo IX y Anexo X ─────────────────────────────────────────
+# Van entre la portada y el índice, sin número de página. Por eso el índice no
+# lo pone pandoc (`toc: false` en la cabecera) sino `\tableofcontents` en el
+# cuerpo, justo después del chunk `preliminares`. El IX se convierte de Word a
+# PDF en cada compilación, así que basta con editar `anexos/anexo9.docx`.
+DIR_FINAL <- "../anexos"
+preliminares <- function() {
+  if (!dir.exists(DIR_FINAL)) return(invisible(NULL))
+  dir.create(DIR_PLANOS, showWarnings = FALSE, recursive = TRUE)
+  soffice <- Sys.which(c("soffice", "libreoffice"))
+  soffice <- soffice[nzchar(soffice)][1]
+  a9 <- file.path(DIR_FINAL, "anexo9.docx")
+  if (file.exists(a9) && !is.na(soffice))
+    system2(soffice, c("--headless", "--convert-to", "pdf", "--outdir",
+                       shQuote(DIR_PLANOS), shQuote(a9)),
+            # R fija LD_LIBRARY_PATH a sus propias bibliotecas y LibreOffice
+            # no arranca con ella («libreglo.so: cannot open shared object»).
+            env = "LD_LIBRARY_PATH=", stdout = FALSE, stderr = FALSE)
+  a9pdf <- file.path(DIR_PLANOS, "anexo9.pdf")
+  a10   <- file.path(DIR_FINAL, "anexo10.pdf")
+  for (pdf in c(if (file.exists(a9pdf)) a9pdf,
+                if (file.exists(a10)) anexo_aplanar(a10)))
+    cat("\\includepdf[pages=-,pagecommand={\\thispagestyle{empty}}]{", pdf, "}\n",
+        sep = "")
 }
 
 opts_chunk$set(
@@ -875,7 +941,31 @@ if (!is.null(acm_res)) {
 ```
 
 
+```{r preliminares, echo=FALSE, results='asis'}
+preliminares()
+```
+
+\clearpage
+\thispagestyle{empty}
+
+\begin{center}
+{\fontsize{14}{17}\selectfont \textbf{Agradecimientos}}
+\end{center}
+
+\vspace{1em}
+
+Al Mtr. Víctor Manuel Barros, director de este trabajo de titulación, por su orientación y sus observaciones a lo largo de todo el proceso.
+
+A los docentes de matemáticas que participaron en el estudio de forma voluntaria y anónima, y a los colegas que contribuyeron a su difusión. Sin su tiempo y su disposición, este trabajo no habría sido posible.
+
+A las instituciones educativas que facilitaron su realización.
+
+\clearpage
+\pagenumbering{roman}
+\tableofcontents
+
 \newpage
+\pagenumbering{arabic}
 
 # Tema
 
@@ -2949,13 +3039,24 @@ nota_anexos_retenidos()
 
 \clearpage
 
-```{r anexo-comite, echo=FALSE, results='asis'}
-anexo_pdf(c("../anexos/comite-peticion-tema.pdf",
-            "../anexos/comite-evaluacion-aprobacion.pdf",
-            "../anexos/comite-designacion-director.pdf",
-            "../anexos/similitud-informe.pdf",
-            "../anexos/director-carta-aprobacion.pdf"))
+```{r anexos-reglamento, echo=FALSE, results='asis'}
+# Los firmados definitivos, en el orden de su numeración. El IX y el X no van
+# aquí: van tras la portada (ver `cover.tex`).
+F <- function(x) file.path("../anexos", x)
+anexo_con_indice(F("anexo1.pdf"),  "Anexo I. Petición para la aprobación del tema")
+anexo_con_indice(F("anexo2.pdf"),  "Anexo II. Evaluación de la aprobación del tema")
+anexo_con_indice(F("anexo3.pdf"),  "Anexo III. Oficio de asignación del director del trabajo de titulación")
+anexo_con_indice(F("anexo4.pdf"),  "Anexo IV. Conocimiento del director de titulación al estudiante")
+anexo_con_indice(F("anexo5a.pdf"), "Anexo V-a. Certificado del director del trabajo de titulación")
+anexo_con_indice(F("anexo5b-ANTIPLAGIO -JIMENEZ-NARVAEZ-signed.pdf"),
+                 "Anexo V-b. Certificado de porcentaje de similitud")
+anexo_con_indice(F("anexo6.pdf"),  "Anexo VI. Registro de tutorías")
+anexo_con_indice(F("anexo7.pdf"),  "Anexo VII. Rúbrica de evaluación del trabajo de titulación")
 ```
+
+\clearpage
+\phantomsection
+\addcontentsline{toc}{subsection}{Evidencia de la recopilación de información}
 
 \begin{center}
 {\large \textbf{Evidencia de la recopilación de información}}
