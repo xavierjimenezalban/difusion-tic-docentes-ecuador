@@ -40,8 +40,8 @@ muestra un botón «Cite this repository» a partir de él.
 | `R/anonimizar.R` | Prepara los CSV para su publicación (ver «Anonimización») |
 | `data/raw/encuesta1.csv`, `data/raw/encuesta2.csv` | Los dos frentes de recolección, ya anonimizados |
 | `data/derived/encuesta_consolidada.csv` | Archivo de análisis. 66 filas, 55 columnas |
-| `referencias.bib`, `apa.csl` | Bibliografía y estilo de citas |
-| `cover.tex`, `header.tex`, `logo.png` | Portada y preámbulo LaTeX |
+| `analysis/referencias.bib`, `analysis/apa.csl` | Bibliografía y estilo de citas |
+| `analysis/cover.tex`, `analysis/header.tex`, `analysis/logo.png` | Portada y preámbulo LaTeX |
 
 **El PDF compilado no se distribuye en este repositorio.** Se obtiene ejecutando
 los dos comandos de la sección siguiente, que lo reconstruyen a partir de estos
