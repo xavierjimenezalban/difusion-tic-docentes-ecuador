@@ -6,7 +6,7 @@ analysis/pub_files/
 publicar/
 
 # NO PUBLICAR: el PDF de la tesis. Se genera en el destino porque
-# preparar_repo.sh cuenta sus páginas como guarda (98 sin anexos, 117 con
+# preparar_repo.sh cuenta sus páginas como guarda (100 sin anexos, 119 con
 # ellos), pero no se sube: la prosa completa indexada en GitHub es justo lo
 # que el informe de similitud no debe encontrar.
 analysis/pfm.pdf
@@ -40,3 +40,5 @@ autorizacion*.pdf
 # en su lugar la página separadora imprime una nota que explica la omisión.
 # Es la única carpeta de anexos; el Anexo IX lleva además los teléfonos.
 anexos/
+# Igual la solicitud y la autorización institucional de la recolección.
+evidencias/

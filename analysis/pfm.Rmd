@@ -10,7 +10,7 @@ geometry: "a4paper,left=4cm,right=3cm,top=3cm,bottom=3cm"
 output:
   bookdown::pdf_document2:
     number_sections: true
-    toc: false  # el índice va en el cuerpo, tras los anexos IX y X
+    toc: false  # el índice va en el cuerpo, tras los agradecimientos
     toc_depth: 3
     includes:
       in_header: header.tex
@@ -62,19 +62,19 @@ REPO_LIC    <- "CC BY-NC 4.0"
 #     PDF. Es el ejemplar que se deposita en la Universidad.
 #   · Sin ella (el repositorio público): no se inserta ninguno y la página
 #     separadora lleva al pie una nota que explica la omisión, de modo que la
-#     promesa de la Fase 1 («cuyo documento se adjunta en los anexos») no queda
+#     promesa de la Fase 1 («cuyo documento se adjunta en la sección de evidencias») no queda
 #     colgando para quien lea el repositorio.
 #
 # `anexos/` va al .gitignore: esos PDF llevan la firma, el nombre y el cargo de
 # terceros que no consintieron su difusión pública.
 #
-# El ORDEN reproduce la lista del Anexo XV del Reglamento de titulación:
-#   i    Aprobación del tema por el comité académico y designación del director
-#   ii   Verificación mediante sistema antiplagio (límite de similitud 5 %)
-#   iii  Carta de aprobación del director del trabajo de titulación
-#   iv   Evidencia de la recopilación de información
-# El instrumento es la primera mitad del iv y las autorizaciones la segunda, de
-# modo que sigue siendo lo ultimo escrito en el .Rmd.
+# Tras las referencias van dos secciones, cada una con su página separadora y
+# su propia carpeta, para que no se mezclen:
+#   · EVIDENCIAS (`evidencias/`): el instrumento, escrito en este .Rmd, y la
+#     solicitud y la autorización institucional bajo las que se aplicó.
+#   · ANEXOS (`anexos/`): los formularios del reglamento, sin firmar, en el
+#     orden de su numeración (I a VII, IX y X; el VIII no va).
+# `evidencias/` va también al .gitignore, por la misma razón que `anexos/`.
 
 # Los oficios de la UG vienen firmados con FirmaEC, que dibuja el recuadro de la
 # firma en la ANOTACION del campo de firma, no en el contenido de la pagina.
@@ -94,7 +94,7 @@ anexo_aplanar <- function(archivo) {
   if (!nzchar(QPDF)) return(archivo)
   dir.create(DIR_PLANOS, showWarnings = FALSE, recursive = TRUE)
   # Sin espacios: \includepdf no acepta rutas con espacios, y el nombre del
-  # original (p. ej. «anexo5b-ANTIPLAGIO -JIMENEZ-NARVAEZ-signed.pdf») no se toca.
+  # original, si los tuviera, no se toca.
   destino <- file.path(DIR_PLANOS, gsub(" ", "_", basename(archivo)))
   if (!file.exists(destino) || file.mtime(destino) < file.mtime(archivo)) {
     system2(QPDF, c("--flatten-annotations=all",
@@ -145,53 +145,35 @@ anexo_con_indice <- function(archivo, titulo) {
         pdf, "}\n", sep = "")
 }
 
-# La nota va al pie de la pagina separadora y SOLO en la version publica. El
-# disparador es la ausencia de la carpeta entera, no la de un archivo suelto:
-# en la maquina del autor puede faltar todavia un anexo por recibir, y eso es un
-# pendiente suyo, no algo que haya que imprimir en el documento.
-nota_anexos_retenidos <- function() {
-  if (dir.exists("../anexos")) return(invisible(NULL))
+# Las notas van al pie de cada pagina separadora y SOLO en la version publica.
+# El disparador es la ausencia de la carpeta entera, no la de un archivo suelto:
+# en la maquina del autor puede faltar todavia un documento por recibir, y eso
+# es un pendiente suyo, no algo que haya que imprimir en el documento.
+nota_retenidos <- function(carpeta, texto) {
+  if (dir.exists(carpeta)) return(invisible(NULL))
   cat("\\begin{center}\n\\begin{minipage}{0.82\\textwidth}\n",
-      "\\begin{spacing}{1}\n\\footnotesize\\textit{Nota.} ",
-      "Los anexos administrativos —la aprobación del tema por el comité ",
-      "académico y la designación del director, el certificado del director, ",
-      "el informe de verificación de similitud, el registro de tutorías, la ",
-      "rúbrica de evaluación y la autorización ",
-      "institucional bajo la que se aplicó el instrumento— no se reproducen en ",
-      "esta versión del documento, generada desde el repositorio público de ",
-      "reproducibilidad, por tratarse de documentación firmada que lleva el ",
-      "nombre y el cargo de terceros que no consintieron su difusión. Constan ",
-      "íntegros en el ejemplar depositado en la Universidad de Guayaquil. El ",
-      "instrumento de recolección de datos, que no contiene datos de terceros, ",
-      "sí se reproduce completo.\n",
+      "\\begin{spacing}{1}\n\\footnotesize\\textit{Nota.} ", texto, "\n",
       "\\end{spacing}\n\\end{minipage}\n\\end{center}\n", sep = "")
 }
 
-# ── Preliminares: Anexo IX y Anexo X ─────────────────────────────────────────
-# Van entre la portada y el índice, sin número de página. Por eso el índice no
-# lo pone pandoc (`toc: false` en la cabecera) sino `\tableofcontents` en el
-# cuerpo, justo después del chunk `preliminares`. El IX se convierte de Word a
-# PDF en cada compilación, así que basta con editar `anexos/anexo9.docx`.
-DIR_FINAL <- "../anexos"
-preliminares <- function() {
-  if (!dir.exists(DIR_FINAL)) return(invisible(NULL))
-  dir.create(DIR_PLANOS, showWarnings = FALSE, recursive = TRUE)
-  soffice <- Sys.which(c("soffice", "libreoffice"))
-  soffice <- soffice[nzchar(soffice)][1]
-  a9 <- file.path(DIR_FINAL, "anexo9.docx")
-  if (file.exists(a9) && !is.na(soffice))
-    system2(soffice, c("--headless", "--convert-to", "pdf", "--outdir",
-                       shQuote(DIR_PLANOS), shQuote(a9)),
-            # R fija LD_LIBRARY_PATH a sus propias bibliotecas y LibreOffice
-            # no arranca con ella («libreglo.so: cannot open shared object»).
-            env = "LD_LIBRARY_PATH=", stdout = FALSE, stderr = FALSE)
-  a9pdf <- file.path(DIR_PLANOS, "anexo9.pdf")
-  a10   <- file.path(DIR_FINAL, "anexo10.pdf")
-  for (pdf in c(if (file.exists(a9pdf)) a9pdf,
-                if (file.exists(a10)) anexo_aplanar(a10)))
-    cat("\\includepdf[pages=-,pagecommand={\\thispagestyle{empty}}]{", pdf, "}\n",
-        sep = "")
-}
+nota_evidencias_retenidas <- function() nota_retenidos("../evidencias", paste0(
+  "La solicitud y la autorización institucional bajo las que se aplicó el ",
+  "instrumento no se reproducen en esta versión del documento, generada desde ",
+  "el repositorio público de reproducibilidad, porque llevan la firma, el ",
+  "nombre y el cargo de terceros que no consintieron su difusión. Constan ",
+  "íntegras en el ejemplar depositado en la Universidad de Guayaquil. El ",
+  "instrumento de recolección de datos, que no contiene datos de terceros, ",
+  "sí se reproduce completo."))
+
+nota_anexos_retenidos <- function() nota_retenidos("../anexos", paste0(
+  "Los anexos administrativos —la aprobación del tema por el comité ",
+  "académico y la designación del director, el certificado del director y ",
+  "el de similitud, el registro de tutorías, la rúbrica de evaluación, la ",
+  "ficha de registro y la declaración de autoría— no se reproducen en esta ",
+  "versión del documento, generada desde el repositorio público de ",
+  "reproducibilidad, porque llevan el nombre y el cargo de terceros que no ",
+  "consintieron su difusión. Constan íntegros en el ejemplar depositado en la ",
+  "Universidad de Guayaquil."))
 
 opts_chunk$set(
   echo = TRUE,
@@ -940,11 +922,6 @@ if (!is.null(acm_res)) {
 }
 ```
 
-
-```{r preliminares, echo=FALSE, results='asis'}
-preliminares()
-```
-
 \clearpage
 \thispagestyle{empty}
 
@@ -953,6 +930,8 @@ preliminares()
 \end{center}
 
 \vspace{1em}
+
+A la Universidad de Guayaquil y a los docentes del programa de Maestría en Educación, por la formación recibida.
 
 Al Mtr. Víctor Manuel Barros, director de este trabajo de titulación, por su orientación y sus observaciones a lo largo de todo el proceso.
 
@@ -1697,7 +1676,7 @@ donde $n$ es el número de ítems de la escala, $\sum \sigma_j^2$ es la suma de 
 
 La recolección de datos se organizó en tres fases:
 
-**Fase 1: Núcleo inicial.** La recolección se inició con los docentes del área de Matemáticas de la Unidad Educativa Particular Siete de Mayo (Machala). La aplicación del instrumento en esta institución contó con la autorización formal de su rectorado, cuyo documento se adjunta en los anexos, y el enlace del cuestionario se distribuyó a través de los canales de comunicación profesional del establecimiento. Con independencia de ese aval institucional, el consentimiento informado se obtuvo de cada docente de forma individual al abrir el formulario, conforme al carácter voluntario y anónimo de la participación.
+**Fase 1: Núcleo inicial.** La recolección se inició con los docentes del área de Matemáticas de la Unidad Educativa Particular Siete de Mayo (Machala). La aplicación del instrumento en esta institución contó con la autorización formal de su rectorado, cuyo documento se adjunta en la sección de evidencias, y el enlace del cuestionario se distribuyó a través de los canales de comunicación profesional del establecimiento. Con independencia de ese aval institucional, el consentimiento informado se obtuvo de cada docente de forma individual al abrir el formulario, conforme al carácter voluntario y anónimo de la participación.
 
 **Fase 2: Difusión por bola de nieve.** El cuestionario se distribuyó a través de redes profesionales de docentes de matemáticas, principalmente grupos de mensajería y redes sociales de carácter docente, solicitando a los participantes que lo compartieran con colegas de otras instituciones. Se sumó a esta fase una difusión por correo electrónico institucional dirigida al profesorado de dos establecimientos de la ciudad de Quito, el Colegio La Salle y el Colegio Cardenal Spellman. En estos casos, propios de un muestreo por bola de nieve, la participación se recabó directamente de cada docente mediante el consentimiento informado del formulario, sin mediar convenio institucional: el instrumento circula por las redes profesionales del profesorado y no por vía jerárquica, de modo que la decisión de participar corresponde en exclusiva a cada participante. Este mecanismo permitió extender la muestra a instituciones de distinto sostenimiento y ubicación geográfica.
 
@@ -1713,7 +1692,7 @@ Una precisión sobre el tratamiento de los datos faltantes. El cuestionario omit
 
 El análisis se estructuró en seis fases. Cinco de ellas desarrollan cada uno de los objetivos específicos del estudio, y la Fase 5 reúne los procedimientos de robustez y proyección sobre los que se apoya la interpretación de todas las demás. Todos los análisis se realizaron en el entorno estadístico R [@dalgaard2008introductory; @wickham2016r], mediante la función `nls()` de la distribución base para la regresión no lineal, el paquete `FactoMineR` [@le2008factominer] para el Análisis de Correspondencia Múltiple, `psych` para los coeficientes de fiabilidad y `ggplot2` para la visualización de resultados. El documento se generó con R Markdown, de modo que la totalidad de las cifras, tablas y figuras que se reportan se recalculan a partir del archivo de datos en cada compilación.
 
-Esa propiedad se hizo verificable por terceros. El archivo de datos anonimizado, el script de consolidación, el código de análisis y el propio documento fuente se depositaron en un repositorio público archivado con identificador permanente (DOI: https://doi.org/`r REPO_DOI`), bajo licencia `r REPO_LIC` para los datos y el documento y licencia MIT para el código. Los procedimientos que dependen de la generación de números aleatorios (el remuestreo de la Fase 5 y el experimento de simulación descrito en esa misma fase) fijan su semilla en el código, de modo que la ejecución del repositorio reproduce los valores aquí reportados y no meramente valores próximos. El depósito excluye los dos campos del formulario que, sin ser objeto de análisis, podrían permitir la reidentificación indirecta de un participante: la marca temporal de envío y el nombre del establecimiento.
+Esa propiedad se hizo verificable por terceros. El archivo de datos anonimizado, el script de consolidación, el código de análisis y el propio documento fuente se depositaron en un repositorio público archivado con identificador permanente (DOI: \href{https://doi.org/`r REPO_DOI`}{https://doi.org/`r REPO_DOI`}), bajo licencia `r REPO_LIC` para los datos y el documento y licencia MIT para el código. Los procedimientos que dependen de la generación de números aleatorios (el remuestreo de la Fase 5 y el experimento de simulación descrito en esa misma fase) fijan su semilla en el código, de modo que la ejecución del repositorio reproduce los valores aquí reportados y no meramente valores próximos. El depósito excluye los dos campos del formulario que, sin ser objeto de análisis, podrían permitir la reidentificación indirecta de un participante: la marca temporal de envío y el nombre del establecimiento.
 
 ### Fase 1: Construcción de las series temporales de adopción (OE1)
 
@@ -3008,7 +2987,7 @@ Del análisis se derivan las siguientes orientaciones, dirigidas a los actores q
 
 **Para la sostenibilidad del uso.** La proporción de docentes que declara haber abandonado herramientas previamente adoptadas indica que la adopción inicial no se consolida por sí sola. Se recomienda incorporar a los programas institucionales indicadores de uso sostenido, y no únicamente de adopción, así como espacios de intercambio entre docentes que reduzcan el costo de mantener la práctica.
 
-**Para la investigación futura.** Tres extensiones se desprenden directamente de las limitaciones declaradas: construir las series con población en riesgo variable a partir de los años de experiencia docente; medir las percepciones TAM por herramienta y no de forma genérica, lo que permitiría contrastar la relación entre percepción y parámetros de difusión; y aplicar el instrumento con muestreo estratificado por ubicación y sostenimiento, único diseño que permitiría estimar curvas de difusión diferenciadas por contexto y cuantificar la brecha que este estudio solo puede describir. A ellas se suma una recomendación dirigida al propio procedimiento de comparación: dado el poder de discriminación documentado en la sección \@ref(discriminacion), los estudios que contrasten formas funcionales de difusión sobre series educativas breves deberían acompañar la comparación de criterios de información de una evaluación de su capacidad de acierto en las condiciones concretas del estudio, en lugar de tratar el modelo de menor AIC como el identificado. Los datos anonimizados y el código que sostienen todo lo anterior quedan disponibles en el repositorio citado en el plan de análisis (DOI: https://doi.org/`r REPO_DOI`), de modo que cualquiera de estas extensiones puede acometerse sin repetir la recolección.
+**Para la investigación futura.** Tres extensiones se desprenden directamente de las limitaciones declaradas: construir las series con población en riesgo variable a partir de los años de experiencia docente; medir las percepciones TAM por herramienta y no de forma genérica, lo que permitiría contrastar la relación entre percepción y parámetros de difusión; y aplicar el instrumento con muestreo estratificado por ubicación y sostenimiento, único diseño que permitiría estimar curvas de difusión diferenciadas por contexto y cuantificar la brecha que este estudio solo puede describir. A ellas se suma una recomendación dirigida al propio procedimiento de comparación: dado el poder de discriminación documentado en la sección \@ref(discriminacion), los estudios que contrasten formas funcionales de difusión sobre series educativas breves deberían acompañar la comparación de criterios de información de una evaluación de su capacidad de acierto en las condiciones concretas del estudio, en lugar de tratar el modelo de menor AIC como el identificado. Los datos anonimizados y el código que sostienen todo lo anterior quedan disponibles en el repositorio citado en el plan de análisis (DOI: \href{https://doi.org/`r REPO_DOI`}{https://doi.org/`r REPO_DOI`}), de modo que cualquiera de estas extensiones puede acometerse sin repetir la recolección.
 
 Con todo, la contribución de este trabajo es doble y no reside en el valor de los parámetros estimados. En el plano metodológico, mostró que la trayectoria de adopción docente de tecnología matemática en Ecuador es susceptible de modelización formal y delimitó con precisión qué puede y qué no puede concluirse de ella con los datos actualmente disponibles. En el plano sustantivo, caracterizó dentro de esos límites un proceso de difusión que discurre por redes profesionales antes que por vías institucionales, y cuyo cuello de botella no está en el conocimiento de las herramientas sino en la competencia para integrarlas en la enseñanza de las matemáticas.
 
@@ -3022,44 +3001,27 @@ Con todo, la contribución de este trabajo es doble y no reside en el valor de l
 \indicesolosecciones
 
 \phantomsection
-\addcontentsline{toc}{section}{Anexos}
+\addcontentsline{toc}{section}{Evidencias}
 \thispagestyle{fancy}
 
 \vspace*{\fill}
 
 \begin{center}
-{\fontsize{28}{34}\selectfont \textbf{ANEXOS}}
+{\fontsize{28}{34}\selectfont \textbf{EVIDENCIAS}}
 \end{center}
 
 \vspace*{\fill}
 
-```{r anexos-nota, echo=FALSE, results='asis'}
-nota_anexos_retenidos()
-```
-
-\clearpage
-
-```{r anexos-reglamento, echo=FALSE, results='asis'}
-# Los firmados definitivos, en el orden de su numeración. El IX y el X no van
-# aquí: van tras la portada (ver `cover.tex`).
-F <- function(x) file.path("../anexos", x)
-anexo_con_indice(F("anexo1.pdf"),  "Anexo I. Petición para la aprobación del tema")
-anexo_con_indice(F("anexo2.pdf"),  "Anexo II. Evaluación de la aprobación del tema")
-anexo_con_indice(F("anexo3.pdf"),  "Anexo III. Oficio de asignación del director del trabajo de titulación")
-anexo_con_indice(F("anexo4.pdf"),  "Anexo IV. Conocimiento del director de titulación al estudiante")
-anexo_con_indice(F("anexo5a.pdf"), "Anexo V-a. Certificado del director del trabajo de titulación")
-anexo_con_indice(F("anexo5b-ANTIPLAGIO -JIMENEZ-NARVAEZ-signed.pdf"),
-                 "Anexo V-b. Certificado de porcentaje de similitud")
-anexo_con_indice(F("anexo6.pdf"),  "Anexo VI. Registro de tutorías")
-anexo_con_indice(F("anexo7.pdf"),  "Anexo VII. Rúbrica de evaluación del trabajo de titulación")
+```{r evidencias-nota, echo=FALSE, results='asis'}
+nota_evidencias_retenidas()
 ```
 
 \clearpage
 \phantomsection
-\addcontentsline{toc}{subsection}{Evidencia de la recopilación de información}
+\addcontentsline{toc}{subsection}{Instrumento de recolección de datos}
 
 \begin{center}
-{\large \textbf{Evidencia de la recopilación de información}}
+{\large \textbf{Instrumento de recolección de datos}}
 \end{center}
 
 \vspace{2em}
@@ -3432,7 +3394,74 @@ Al continuar, usted consiente participar en este estudio.
 
 \clearpage
 
-```{r anexo-autorizacion, echo=FALSE, results='asis'}
-anexo_pdf(c("../anexos/recoleccion-solicitud-institucional.pdf",
-            "../anexos/recoleccion-autorizacion-firmada.pdf"))
+```{r evidencias-autorizacion, echo=FALSE, results='asis'}
+anexo_con_indice("../evidencias/recoleccion-solicitud-institucional.pdf",
+                 "Solicitud y autorización institucional")
+anexo_pdf("../evidencias/recoleccion-autorizacion-firmada.pdf")
+```
+
+\clearpage
+\phantomsection
+\addcontentsline{toc}{subsection}{Repositorio de datos y código}
+
+\begin{center}
+{\large \textbf{Repositorio de datos y código}}
+\end{center}
+
+\vspace{1em}
+
+Los datos y el código con los que se obtuvieron los resultados de este trabajo están depositados en un repositorio de acceso abierto, archivado en Zenodo con identificador permanente:
+
+\begin{center}
+\textbf{DOI:} \href{https://doi.org/`r REPO_DOI`}{https://doi.org/`r REPO_DOI`}
+\end{center}
+
+**Contenido del depósito.**
+
+- Las respuestas de los dos frentes de recolección, anonimizadas: 66 registros, de los cuales 63 cumplen los criterios de inclusión.
+- El script que une los dos formularios en un único archivo de análisis.
+- El documento fuente de este trabajo, que contiene todo el código de análisis y genera el documento completo, con sus tablas y figuras.
+
+**Anonimización.** El formulario no recogió el nombre ni el correo de los participantes. Antes del depósito se vaciaron, además, dos campos que no intervienen en el análisis pero que permitirían la reidentificación indirecta de un docente: la marca temporal de envío y el nombre del establecimiento. Ninguna cifra de este documento depende de ellos.
+
+**Reproducción.** Con R y los paquetes que se indican en el repositorio, basta con descargar el depósito desde el DOI anterior y ejecutar, desde su carpeta principal, las dos órdenes siguientes. La primera regenera el archivo de análisis a partir de los datos anonimizados; la segunda recalcula todos los resultados y genera el documento.
+
+```
+Rscript R/consolidar.R
+Rscript -e 'rmarkdown::render("analysis/pfm.Rmd")'
+```
+
+Las semillas aleatorias del remuestreo *bootstrap* y del experimento de simulación están fijadas en el código, de modo que la ejecución reproduce exactamente los valores aquí reportados y no solo valores próximos.
+
+\clearpage
+\phantomsection
+\addcontentsline{toc}{section}{Anexos}
+\thispagestyle{fancy}
+
+\vspace*{\fill}
+
+\begin{center}
+{\fontsize{28}{34}\selectfont \textbf{ANEXOS}}
+\end{center}
+
+\vspace*{\fill}
+
+```{r anexos-nota, echo=FALSE, results='asis'}
+nota_anexos_retenidos()
+```
+
+\clearpage
+
+```{r anexos-reglamento, echo=FALSE, results='asis'}
+# Los formularios del reglamento, sin firmar, en el orden de su numeración.
+F <- function(x) file.path("../anexos", x)
+anexo_con_indice(F("anexo1.pdf"),  "Anexo I. Petición para la aprobación del tema")
+anexo_con_indice(F("anexo2.pdf"),  "Anexo II. Evaluación de la aprobación del tema")
+anexo_con_indice(F("anexo3.pdf"),  "Anexo III. Oficio de asignación del director del trabajo de titulación")
+anexo_con_indice(F("anexo4.pdf"),  "Anexo IV. Conocimiento del director de titulación al estudiante")
+anexo_con_indice(F("anexo5.pdf"),  "Anexo V. Certificado del director del trabajo de titulación")
+anexo_con_indice(F("anexo6.pdf"),  "Anexo VI. Registro de tutorías")
+anexo_con_indice(F("anexo7.pdf"),  "Anexo VII. Rúbrica de evaluación del trabajo de titulación")
+anexo_con_indice(F("anexo9.pdf"),  "Anexo IX. Ficha de registro del trabajo de titulación")
+anexo_con_indice(F("anexo10.pdf"), "Anexo X. Declaración de autoría y autorización de licencia")
 ```
